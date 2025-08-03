@@ -27,4 +27,30 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// POST a new error code
+router.post('/', async (req, res) => {
+  try {
+    const newError = {
+      code: req.body.code,
+      title: req.body.title,
+      category: req.body.category,
+      severity: req.body.severity,
+      description: req.body.description,
+      symptoms: req.body.symptoms,
+      causes: req.body.causes,
+      quickFix: req.body.quickFix,
+      estimatedTime: req.body.estimatedTime,
+      difficulty: req.body.difficulty,
+      toolsRequired: req.body.toolsRequired,
+      partsNeeded: req.body.partsNeeded,
+      safetyWarnings: req.body.safetyWarnings,
+      steps: req.body.steps,
+    };
+    const docRef = await db.collection('errors').add(newError);
+    res.status(201).json({ id: docRef.id, ...newError });
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+});
+
 module.exports = router;
