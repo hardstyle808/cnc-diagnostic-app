@@ -1,316 +1,7 @@
 'use client'
 
 import React, { useState, useEffect } from 'react';
-
-// Enhanced Error Database (you'll create this file)
-const biesseErrorCodes = {
-  'E001': {
-    code: 'E001',
-    title: 'Spindle Overload',
-    category: 'Spindle',
-    severity: 'high',
-    description: 'Spindle motor drawing excessive current above 33A rating',
-    symptoms: ['Spindle stops during cut', 'Current alarm on display', 'Burning smell from motor'],
-    causes: ['Dull cutting tools', 'Excessive feed rate', 'Workpiece too hard', 'Spindle bearing failure'],
-    quickFix: 'Check tool condition and reduce feed rate',
-    estimatedTime: '15-30 minutes',
-    difficulty: 'Medium',
-    toolsRequired: ['Multimeter', 'Tool holder wrench', 'Replacement cutting tools'],
-    partsNeeded: ['Cutting tools (if worn)', 'Spindle brushes (if applicable)'],
-    safetyWarnings: ['Ensure emergency stop is accessible', 'Allow spindle to cool before inspection'],
-    steps: [
-      {
-        step: 1,
-        title: 'Emergency Stop and Safety',
-        description: 'Press emergency stop button immediately. Allow spindle to cool for 10 minutes.',
-        safety: true,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/emergency-stop.mp4',
-        photoUrls: ['/images/emergency-stop-button.jpg', '/images/spindle-cooling.jpg']
-      },
-      {
-        step: 2,
-        title: 'Inspect Cutting Tool',
-        description: 'Remove and examine cutting tool for wear, damage, or dullness. Replace if necessary.',
-        safety: false,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/tool-inspection.mp4',
-        photoUrls: ['/images/worn-tool.jpg', '/images/sharp-tool.jpg', '/images/tool-removal.jpg']
-      },
-      {
-        step: 3,
-        title: 'Check Program Feed Rates',
-        description: 'Verify CNC program feed rates are within recommended limits for material and tool.',
-        safety: false,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/feed-rate-check.mp4',
-        photoUrls: ['/images/cnc-program-screen.jpg', '/images/feed-rate-table.jpg']
-      },
-      {
-        step: 4,
-        title: 'Test Spindle Current',
-        description: 'Use multimeter to check spindle current draw during light test cut.',
-        safety: true,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/current-measurement.mp4',
-        photoUrls: ['/images/multimeter-reading.jpg', '/images/spindle-terminals.jpg']
-      }
-    ]
-  },
-  'E002': {
-    code: 'E002',
-    title: 'Vacuum System Failure',
-    category: 'Vacuum',
-    severity: 'medium',
-    description: 'Insufficient vacuum pressure for workpiece holding',
-    symptoms: ['Workpiece moves during cut', 'Vacuum pressure below 0.6 bar', 'Pump running continuously'],
-    causes: ['Blocked vacuum lines', 'Dirty vacuum filters', 'Pump wear', 'Workpiece seal issues'],
-    quickFix: 'Check and clean vacuum filters',
-    estimatedTime: '10-20 minutes',
-    difficulty: 'Easy',
-    toolsRequired: ['Vacuum gauge', 'Compressed air gun', 'Filter cleaning tools'],
-    partsNeeded: ['Vacuum filters (if damaged)', 'Vacuum pump oil'],
-    safetyWarnings: ['Ensure workpiece is properly secured before starting'],
-    steps: [
-      {
-        step: 1,
-        title: 'Check Vacuum Gauge Reading',
-        description: 'Read vacuum pressure on machine display. Should be 0.6-0.8 bar minimum.',
-        safety: false,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/vacuum-gauge-check.mp4',
-        photoUrls: ['/images/vacuum-gauge.jpg', '/images/pressure-display.jpg']
-      },
-      {
-        step: 2,
-        title: 'Inspect and Clean Filters',
-        description: 'Remove vacuum filters and clean with compressed air or replace if damaged.',
-        safety: false,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/filter-cleaning.mp4',
-        photoUrls: ['/images/dirty-filter.jpg', '/images/clean-filter.jpg', '/images/filter-location.jpg']
-      },
-      {
-        step: 3,
-        title: 'Check Vacuum Lines',
-        description: 'Inspect all vacuum lines for blockages, cracks, or loose connections.',
-        safety: false,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/vacuum-line-inspection.mp4',
-        photoUrls: ['/images/vacuum-lines.jpg', '/images/line-connection.jpg']
-      }
-    ]
-  },
-  'E003': {
-    code: 'E003',
-    title: 'X-Axis Position Error',
-    category: 'Motion',
-    severity: 'high',
-    description: 'X-axis encoder feedback error or position deviation',
-    symptoms: ['Machine stops mid-program', 'X-axis position alarm', 'Jerky X-axis movement'],
-    causes: ['Encoder cable damage', 'Encoder contamination', 'Drive system wear', 'Cable interference'],
-    quickFix: 'Check encoder cable connections',
-    estimatedTime: '20-45 minutes',
-    difficulty: 'Hard',
-    toolsRequired: ['Oscilloscope', 'Cable tester', 'Encoder alignment tools'],
-    partsNeeded: ['Encoder cable (if damaged)', 'Encoder (if faulty)'],
-    safetyWarnings: ['Use lockout/tagout procedures', 'High voltage present in servo drives'],
-    steps: [
-      {
-        step: 1,
-        title: 'Lockout/Tagout Procedure',
-        description: 'Follow proper LOTO procedures before accessing electrical components.',
-        safety: true,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/loto-procedure.mp4',
-        photoUrls: ['/images/loto-tags.jpg', '/images/main-disconnect.jpg']
-      },
-      {
-        step: 2,
-        title: 'Inspect Encoder Cables',
-        description: 'Check encoder cables for damage, proper connections, and signal integrity.',
-        safety: true,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/encoder-cable-check.mp4',
-        photoUrls: ['/images/encoder-cable.jpg', '/images/cable-damage.jpg', '/images/connector.jpg']
-      },
-      {
-        step: 3,
-        title: 'Test Encoder Signals',
-        description: 'Use oscilloscope to verify encoder A, B, and Z signals are clean and proper amplitude.',
-        safety: true,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/encoder-signal-test.mp4',
-        photoUrls: ['/images/oscilloscope-reading.jpg', '/images/encoder-signals.jpg']
-      }
-    ]
-  },
-  'E004': {
-    code: 'E004',
-    title: 'Tool Changer Fault',
-    category: 'Tool Changer',
-    severity: 'medium',
-    description: 'Automatic tool changer malfunction or timeout',
-    symptoms: ['Tool change fails', 'Wrong tool selected', 'Tool changer stuck', 'Timeout error'],
-    causes: ['Tool holder damage', 'Carousel alignment issues', 'Air pressure low', 'Sensor malfunction'],
-    quickFix: 'Check air pressure and tool holder condition',
-    estimatedTime: '15-25 minutes',
-    difficulty: 'Medium',
-    toolsRequired: ['Air pressure gauge', 'Tool holder inspection tools', 'Alignment tools'],
-    partsNeeded: ['Tool holders (if damaged)', 'Air filters', 'Proximity sensors'],
-    safetyWarnings: ['Ensure tool changer is in safe position', 'Keep clear of moving carousel'],
-    steps: [
-      {
-        step: 1,
-        title: 'Check Air Pressure',
-        description: 'Verify air pressure is 6-8 bar for proper tool changer operation.',
-        safety: false,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/air-pressure-check.mp4',
-        photoUrls: ['/images/air-gauge.jpg', '/images/pressure-regulator.jpg']
-      },
-      {
-        step: 2,
-        title: 'Inspect Tool Holders',
-        description: 'Check all tool holders for damage, wear, or contamination.',
-        safety: false,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/tool-holder-inspection.mp4',
-        photoUrls: ['/images/damaged-holder.jpg', '/images/clean-holder.jpg']
-      },
-      {
-        step: 3,
-        title: 'Test Carousel Movement',
-        description: 'Manually test carousel rotation and tool selection mechanism.',
-        safety: true,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/carousel-test.mp4',
-        photoUrls: ['/images/carousel-position.jpg', '/images/tool-selection.jpg']
-      }
-    ]
-  },
-  'E010': {
-    code: 'E010',
-    title: 'Z-Axis Home Position Lost',
-    category: 'Motion',
-    severity: 'high',
-    description: 'Z-axis cannot find home position during homing sequence',
-    symptoms: ['Homing fails on startup', 'Z-axis moves to wrong position', 'Machine wont start program'],
-    causes: ['Home switch failure', 'Mechanical obstruction', 'Encoder issues', 'Software corruption'],
-    quickFix: 'Check home switch operation',
-    estimatedTime: '20-30 minutes',
-    difficulty: 'Medium',
-    toolsRequired: ['Multimeter', 'Flashlight', 'Switch tester'],
-    partsNeeded: ['Home switch (if faulty)', 'Switch mounting hardware'],
-    safetyWarnings: ['Machine may move unexpectedly during homing'],
-    steps: [
-      {
-        step: 1,
-        title: 'Locate Home Switch',
-        description: 'Find the Z-axis home switch and visually inspect for damage.',
-        safety: false,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/home-switch-location.mp4',
-        photoUrls: ['/images/z-home-switch.jpg', '/images/switch-mounting.jpg']
-      },
-      {
-        step: 2,
-        title: 'Test Switch Operation',
-        description: 'Manually activate switch and test electrical continuity.',
-        safety: false,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/switch-testing.mp4',
-        photoUrls: ['/images/multimeter-switch.jpg', '/images/switch-activation.jpg']
-      }
-    ]
-  },
-  'E015': {
-    code: 'E015',
-    title: 'Coolant System Low Pressure',
-    category: 'Coolant',
-    severity: 'low',
-    description: 'Coolant pump pressure below minimum threshold',
-    symptoms: ['Poor surface finish', 'Tool overheating', 'Coolant pressure alarm'],
-    causes: ['Clogged coolant filter', 'Low coolant level', 'Pump wear', 'Blocked nozzles'],
-    quickFix: 'Check coolant level and filter condition',
-    estimatedTime: '10-15 minutes',
-    difficulty: 'Easy',
-    toolsRequired: ['Coolant tester', 'Filter wrench', 'Funnel'],
-    partsNeeded: ['Coolant filter', 'Coolant fluid'],
-    safetyWarnings: ['Use proper PPE when handling coolant'],
-    steps: [
-      {
-        step: 1,
-        title: 'Check Coolant Level',
-        description: 'Verify coolant tank level is above minimum mark.',
-        safety: false,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/coolant-level-check.mp4',
-        photoUrls: ['/images/coolant-tank.jpg', '/images/level-indicator.jpg']
-      },
-      {
-        step: 2,
-        title: 'Inspect Coolant Filter',
-        description: 'Remove and inspect coolant filter for clogs or contamination.',
-        safety: false,
-        hasVideo: true,
-        hasPhoto: true,
-        videoUrl: '/videos/coolant-filter-check.mp4',
-        photoUrls: ['/images/dirty-coolant-filter.jpg', '/images/new-filter.jpg']
-      }
-    ]
-  }
-};
-
-// Forum data
-const forumTopics = [
-  {
-    id: 1,
-    title: 'E001 Spindle Overload - Feed Rate Solutions',
-    author: 'TechMike47',
-    replies: 23,
-    lastReply: '2 hours ago',
-    category: 'Spindle Issues',
-    status: 'solved',
-    preview: 'Found that reducing feed rate by 30% solved my E001 errors...'
-  },
-  {
-    id: 2,
-    title: 'Vacuum System Maintenance Schedule',
-    author: 'MaintenanceJoe',
-    replies: 15,
-    lastReply: '1 day ago',
-    category: 'Preventive Maintenance',
-    status: 'active',
-    preview: 'What is everyone using for vacuum filter replacement intervals?'
-  },
-  {
-    id: 3,
-    title: 'Tool Changer Calibration After E004 Error',
-    author: 'CNCExpert',
-    replies: 31,
-    lastReply: '3 days ago',
-    category: 'Tool Changer',
-    status: 'solved',
-    preview: 'Step-by-step calibration procedure that worked for me...'
-  }
-];
+import Forum from './Forum.js';
 
 const CNCDiagnosticApp = () => {
   const [activeTab, setActiveTab] = useState('home');
@@ -318,18 +9,36 @@ const CNCDiagnosticApp = () => {
   const [selectedError, setSelectedError] = useState(null);
   const [isScanning, setIsScanning] = useState(false);
   const [showForum, setShowForum] = useState(false);
+  const [errorCodes, setErrorCodes] = useState([]);
+  const [forumTopics, setForumTopics] = useState([]);
+  const [machineSpecs, setMachineSpecs] = useState({});
 
-  const machineSpecs = {
-    model: 'ROVER A SMART 1632',
-    manufacturer: 'BIESSE',
-    serialNumber: '1000064667',
-    weight: '400 kg',
-    power: '19.2 kW',
-    voltage: '400 VAC',
-    current: '33 A',
-    frequency: '50 Hz',
-    powerPhases: '3'
-  };
+
+  useEffect(() => {
+    fetch('http://localhost:5000/api/errors')
+      .then(res => res.json())
+      .then(data => setErrorCodes(data))
+      .catch(err => console.error("Failed to fetch error codes:", err));
+
+    fetch('http://localhost:5000/api/forums')
+      .then(res => res.json())
+      .then(data => setForumTopics(data))
+      .catch(err => console.error("Failed to fetch forum topics:", err));
+
+    // You would also fetch machine specs from your backend
+    // For now, let's keep it as a static object or fetch from a dedicated endpoint
+    setMachineSpecs({
+        model: 'ROVER A SMART 1632',
+        manufacturer: 'BIESSE',
+        serialNumber: '1000064667',
+        weight: '400 kg',
+        power: '19.2 kW',
+        voltage: '400 VAC',
+        current: '33 A',
+        frequency: '50 Hz',
+        powerPhases: '3'
+    });
+  }, []);
 
   const handleScan = () => {
     setIsScanning(true);
@@ -359,7 +68,7 @@ const CNCDiagnosticApp = () => {
     }
   };
 
-  const errorCodesArray = Object.values(biesseErrorCodes);
+  const errorCodesArray = Object.values(errorCodes);
   const filteredErrors = errorCodesArray.filter(error => 
     error.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
     error.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
